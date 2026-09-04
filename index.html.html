@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Asistente Tributario y Financiero</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#16233E;
+    --slate:#48566E;
+    --paper:#F6F5F1;
+    --panel:#FFFFFF;
+    --line:#DEDACE;
+    --gold:#B8863B;
+    --gold-soft:#F1E4CB;
+    --text:#20242C;
+    --muted:#6B7280;
+    --green:#2F6F4E;
+    --red:#A7392C;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'IBM Plex Sans', sans-serif;
+    background:var(--paper);
+    color:var(--text);
+    height:100vh;
+    overflow:hidden;
+  }
+  .app{
+    display:grid;
+    grid-template-columns: 300px 1fr;
+    height:100vh;
+  }
+  /* Sidebar */
+  .sidebar{
+    background:var(--ink);
+    color:#EDEFF5;
+    padding:28px 22px;
+    display:flex;
+    flex-direction:column;
+    overflow-y:auto;
+  }
+  .brand{
+    font-family:'Source Serif 4', serif;
+    font-size:20px;
+    font-weight:600;
+    letter-spacing:0.2px;
+    margin-bottom:4px;
+  }
+  .brand-sub{
+    font-size:12.5px;
+    color:#9FAAC2;
+    margin-bottom:26px;
+    line-height:1.4;
+  }
+  .field-group{
+    margin-bottom:18px;
+  }
+  .field-label{
+    font-size:11px;
+    color:#8D9BB8;
+    text-transform:uppercase;
+    letter-spacing:0.6px;
+    margin-bottom:5px;
+    display:block;
+  }
+  .field-input{
+    width:100%;
+    background:rgba(255,255,255,0.06);
+    border:1px solid rgba(255,255,255,0.14);
+    color:#EDEFF5;
+    padding:8px 10px;
+    border-radius:5px;
+    font-size:13.5px;
+    font-family:'IBM Plex Mono', monospace;
+  }
+  .field-input:focus{
+    outline:none;
+    border-color:var(--gold);
+  }
+  select.field-input{
+    font-family:'IBM Plex Sans', sans-serif;
+  }
+  .toggle-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:9px 0;
+    border-bottom:1px solid rgba(255,255,255,0.08);
+    font-size:13.5px;
+  }
+  .switch{
+    position:relative;
+    width:36px;
+    height:20px;
+    flex-shrink:0;
+  }
+  .switch input{opacity:0;width:0;height:0;}
+  .switch-track{
+    position:absolute;inset:0;
+    background:rgba(255,255,255,0.18);
+    border-radius:20px;
+    cursor:pointer;
+    transition:background .15s;
+  }
+  .switch-track:before{
+    content:"";
+    position:absolute;
+    height:14px;width:14px;
+    left:3px;top:3px;
+    background:#fff;
+    border-radius:50%;
+    transition:transform .15s;
+  }
+  .switch input:checked + .switch-track{background:var(--gold);}
+  .switch input:checked + .switch-track:before{transform:translateX(16px);}
+  .sidebar-note{
+    margin-top:auto;
+    padding-top:20px;
+    font-size:11.5px;
+    color:#7E8BA8;
+    line-height:1.5;
+    border-top:1px solid rgba(255,255,255,0.1);
+  }
+
+  /* Main */
+  .main{
+    display:flex;
+    flex-direction:column;
+    height:100vh;
+  }
+  .topbar{
+    padding:18px 28px;
+    border-bottom:1px solid var(--line);
+    background:var(--panel);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+  }
+  .topbar h1{
+    font-family:'Source Serif 4', serif;
+    font-size:18px;
+    font-weight:600;
+    margin:0;
+  }
+  .topbar p{
+    margin:2px 0 0;
+    font-size:12.5px;
+    color:var(--muted);
+  }
+  .quick-actions{
+    display:flex;
+    gap:8px;
+    padding:14px 28px;
+    border-bottom:1px solid var(--line);
+    background:var(--panel);
+    flex-wrap:wrap;
+  }
+  .qa-btn{
+    border:1px solid var(--line);
+    background:var(--paper);
+    color:var(--ink);
+    padding:8px 14px;
+    border-radius:7px;
+    font-size:13px;
+    font-family:'IBM Plex Sans', sans-serif;
+    cursor:pointer;
+    transition:border-color .15s, background .15s;
+  }
+  .qa-btn:hover{
+    border-color:var(--gold);
+    background:var(--gold-soft);
+  }
+  .chat-area{
+    flex:1;
+    overflow-y:auto;
+    padding:24px 28px;
+    display:flex;
+    flex-direction:column;
+    gap:18px;
+  }
+  .msg{
+    max-width:78%;
+    padding:13px 16px;
+    border-radius:10px;
+    font-size:14.5px;
+    line-height:1.55;
+    white-space:pre-wrap;
+  }
+  .msg.user{
+    align-self:flex-end;
+    background:var(--ink);
+    color:#EDEFF5;
+    border-bottom-right-radius:3px;
+  }
+  .msg.assistant{
+    align-self:flex-start;
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-bottom-left-radius:3px;
+  }
+  .msg.assistant .label, .msg.user .label{
+    display:block;
+    font-size:10.5px;
+    text-transform:uppercase;
+    letter-spacing:0.5px;
+    opacity:0.55;
+    margin-bottom:5px;
+  }
+  .empty-state{
+    margin:auto;
+    text-align:center;
+    color:var(--muted);
+    max-width:420px;
+  }
+  .empty-state h2{
+    font-family:'Source Serif 4', serif;
+    color:var(--ink);
+    font-size:20px;
+    margin-bottom:8px;
+  }
+  .empty-state p{font-size:13.5px; line-height:1.6;}
+  .typing{
+    align-self:flex-start;
+    color:var(--muted);
+    font-size:13px;
+    font-style:italic;
+    padding:0 4px;
+  }
+  .composer{
+    padding:16px 28px 22px;
+    border-top:1px solid var(--line);
+    background:var(--panel);
+    display:flex;
+    gap:10px;
+  }
+  .composer textarea{
+    flex:1;
+    resize:none;
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:11px 13px;
+    font-family:'IBM Plex Sans', sans-serif;
+    font-size:14px;
+    height:46px;
+    max-height:140px;
+  }
+  .composer textarea:focus{outline:none; border-color:var(--gold);}
+  .send-btn{
+    background:var(--ink);
+    color:#fff;
+    border:none;
+    padding:0 22px;
+    border-radius:8px;
+    cursor:pointer;
+    font-size:14px;
+    font-weight:500;
+  }
+  .send-btn:disabled{opacity:0.5; cursor:default;}
+  .send-btn:hover:not(:disabled){background:#233257;}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">Asistente T&amp;F</div>
+    <div class="brand-sub">Parametrización tributaria y financiera &mdash; Colombia (DIAN)</div>
+
+    <div class="field-group">
+      <label class="field-label">Razón social</label>
+      <input class="field-input" id="p-nombre" value="Comercializadora Andina S.A.S.">
+    </div>
+    <div class="field-group">
+      <label class="field-label">NIT</label>
+      <input class="field-input" id="p-nit" value="900.123.456-7">
+    </div>
+    <div class="field-group">
+      <label class="field-label">Régimen tributario</label>
+      <select class="field-input" id="p-regimen">
+        <option>Régimen ordinario</option>
+        <option>Régimen simple de tributación</option>
+      </select>
+    </div>
+    <div class="field-group">
+      <label class="field-label">Actividad económica (CIIU)</label>
+      <input class="field-input" id="p-ciiu" value="4649 - Comercio al por mayor">
+    </div>
+    <div class="field-group">
+      <label class="field-label">Municipio (ICA)</label>
+      <input class="field-input" id="p-municipio" value="Bogotá D.C.">
+    </div>
+
+    <div class="toggle-row">
+      <span>Agente retenedor</span>
+      <label class="switch"><input type="checkbox" id="p-retenedor" checked><span class="switch-track"></span></label>
+    </div>
+    <div class="toggle-row">
+      <span>Gran contribuyente</span>
+      <label class="switch"><input type="checkbox" id="p-granContrib"><span class="switch-track"></span></label>
+    </div>
+    <div class="toggle-row">
+      <span>Responsable de IVA</span>
+      <label class="switch"><input type="checkbox" id="p-iva" checked><span class="switch-track"></span></label>
+    </div>
+    <div class="toggle-row" style="border-bottom:none;">
+      <span>Autorretenedor renta</span>
+      <label class="switch"><input type="checkbox" id="p-autorretenedor"><span class="switch-track"></span></label>
+    </div>
+
+    <div class="sidebar-note">
+      Estos parámetros se inyectan en cada consulta al asistente. Reemplázalos por los datos reales de la empresa. En producción, esta información vendría de tu ERP o de documentos cargados (PDF/Excel).
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div>
+        <h1>Consultor tributario y financiero</h1>
+        <p>Informes e interpretación normativa basados en los parámetros de la empresa</p>
+      </div>
+    </div>
+
+    <div class="quick-actions">
+      <button class="qa-btn" data-prompt="Genera un informe tributario resumido de la empresa: obligaciones formales vigentes, calendario de presentación de declaraciones (renta, IVA, ICA, retefuente) y régimen aplicable, según los parámetros configurados.">Informe tributario</button>
+      <button class="qa-btn" data-prompt="Genera un informe financiero de ejemplo (estructura y contenido) que debería incluir esta empresa: estado de resultados, balance general, indicadores de liquidez y rentabilidad, con explicación de qué mostraría cada sección.">Informe financiero</button>
+      <button class="qa-btn" data-prompt="Explícame los impuestos y retenciones aplicables a esta transacción: compra de servicios de consultoría a una persona natural no declarante, por valor de $8.000.000 antes de IVA. Indica base gravable, tarifas y conceptos de retención en la fuente, IVA e ICA que aplican, con el cálculo.">Explicar una transacción</button>
+    </div>
+
+    <div class="chat-area" id="chatArea">
+      <div class="empty-state" id="emptyState">
+        <h2>Empieza una consulta</h2>
+        <p>Usa uno de los accesos rápidos arriba o escribe directamente una pregunta sobre impuestos, retenciones o informes de la empresa.</p>
+      </div>
+    </div>
+
+    <div class="composer">
+      <textarea id="userInput" placeholder="Ej: ¿Qué retención aplica a un pago de arrendamiento de $3.000.000 a una persona jurídica?"></textarea>
+      <button class="send-btn" id="sendBtn">Enviar</button>
+    </div>
+  </main>
+</div>
+
+<script>
+const chatArea = document.getElementById('chatArea');
+const emptyState = document.getElementById('emptyState');
+const userInput = document.getElementById('userInput');
+const sendBtn = document.getElementById('sendBtn');
+
+let history = [];
+
+function buildSystemPrompt(){
+  const nombre = document.getElementById('p-nombre').value;
+  const nit = document.getElementById('p-nit').value;
+  const regimen = document.getElementById('p-regimen').value;
+  const ciiu = document.getElementById('p-ciiu').value;
+  const municipio = document.getElementById('p-municipio').value;
+  const retenedor = document.getElementById('p-retenedor').checked ? 'Sí' : 'No';
+  const granContrib = document.getElementById('p-granContrib').checked ? 'Sí' : 'No';
+  const iva = document.getElementById('p-iva').checked ? 'Sí' : 'No';
+  const autorretenedor = document.getElementById('p-autorretenedor').checked ? 'Sí' : 'No';
+
+  return `Eres un asistente experto en tributación colombiana (normativa DIAN) y análisis financiero, parametrizado para la siguiente empresa:
+
+- Razón social: ${nombre}
+- NIT: ${nit}
+- Régimen tributario: ${regimen}
+- Actividad económica (CIIU): ${ciiu}
+- Municipio (ICA): ${municipio}
+- Agente retenedor: ${retenedor}
+- Gran contribuyente: ${granContrib}
+- Responsable de IVA: ${iva}
+- Autorretenedor de renta: ${autorretenedor}
+
+Tus dos funciones principales:
+1. Generar informes tributarios y financieros de la empresa (usando los parámetros anteriores y la información que el usuario aporte).
+2. Explicar impuestos y retenciones aplicables a transacciones específicas: identifica el concepto de retención en la fuente, la base gravable, la tarifa aplicable, si aplica IVA (y a qué tarifa), y si aplica ICA según el municipio y la actividad económica.
+
+Instrucciones de estilo:
+- Sé preciso con tarifas y bases, y aclara siempre que las tarifas pueden cambiar y deben verificarse contra la normativa vigente (Estatuto Tributario y decretos reglamentarios actualizados) antes de aplicarlas en la práctica.
+- Cuando calcules un valor de retención o impuesto, muestra la fórmula y el resultado paso a paso.
+- Si falta un dato clave para responder con precisión (ej. si el proveedor es declarante de renta, si es persona natural o jurídica), pregúntalo antes de asumir.
+- Estructura los informes con encabezados claros y, cuando aplique, tablas en texto.
+- No inventes cifras financieras reales de la empresa: si no se han proporcionado datos financieros reales, dilo explícitamente y trabaja con datos de ejemplo etiquetados como tales.
+- Responde siempre en español.`;
+}
+
+function addMessage(role, text){
+  emptyState.style.display = 'none';
+  const div = document.createElement('div');
+  div.className = 'msg ' + role;
+  const label = document.createElement('span');
+  label.className = 'label';
+  label.textContent = role === 'user' ? 'Tú' : 'Asistente';
+  div.appendChild(label);
+  const body = document.createElement('span');
+  body.textContent = text;
+  div.appendChild(body);
+  chatArea.appendChild(div);
+  chatArea.scrollTop = chatArea.scrollHeight;
+  return div;
+}
+
+async function sendMessage(text){
+  if(!text.trim()) return;
+  addMessage('user', text);
+  history.push({role:'user', content: text});
+  userInput.value = '';
+  sendBtn.disabled = true;
+
+  const typing = document.createElement('div');
+  typing.className = 'typing';
+  typing.textContent = 'El asistente está analizando…';
+  chatArea.appendChild(typing);
+  chatArea.scrollTop = chatArea.scrollHeight;
+
+  try{
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-6",
+        max_tokens: 1000,
+        system: buildSystemPrompt(),
+        messages: history
+      })
+    });
+    const data = await response.json();
+    typing.remove();
+
+    const textBlock = (data.content || []).map(b => b.text || '').join('\n').trim();
+    const reply = textBlock || 'No se recibió respuesta del modelo.';
+    addMessage('assistant', reply);
+    history.push({role:'assistant', content: reply});
+  }catch(err){
+    typing.remove();
+    addMessage('assistant', 'Ocurrió un error al consultar el asistente: ' + err.message);
+  }finally{
+    sendBtn.disabled = false;
+  }
+}
+
+sendBtn.addEventListener('click', () => sendMessage(userInput.value));
+userInput.addEventListener('keydown', (e) => {
+  if(e.key === 'Enter' && !e.shiftKey){
+    e.preventDefault();
+    sendMessage(userInput.value);
+  }
+});
+document.querySelectorAll('.qa-btn').forEach(btn => {
+  btn.addEventListener('click', () => sendMessage(btn.dataset.prompt));
+});
+</script>
+</body>
+</html>
